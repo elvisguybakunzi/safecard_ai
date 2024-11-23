@@ -3,3 +3,4 @@ pydantic
 python-multipart
 numpy
 scikit-learn
+uvicorn
