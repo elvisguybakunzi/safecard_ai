@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import numpy as np
@@ -10,6 +11,14 @@ from ml_pipeline_functions.model import ModelTrainer
 
 app = FastAPI()
 
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load preprocessor and model
 preprocessor = DataPreprocessor.load_preprocessor('models/preprocessor.pkl')
