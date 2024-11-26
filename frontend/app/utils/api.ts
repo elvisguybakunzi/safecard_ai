@@ -12,7 +12,10 @@ export interface PredictionData {
 
 export interface PredictionResponse {
   prediction: number;
-  probability: number;
+  probabilities: {
+    not_fraud: number;
+    fraud: number;
+  };
   message?: string;
 }
 
@@ -26,6 +29,26 @@ export interface RetrainResponse {
     f1_score: number;
   };
 }
+
+export interface DataInfo {
+  total_samples: number;
+  features: string[];
+  fraud_ratio: number;
+  feature_stats: {
+    [key: string]: {
+      mean: number;
+      std: number;
+      min: number;
+      max: number;
+    };
+  };
+}
+
+export interface UploadResponse {
+  message: string;
+  data_info: DataInfo;
+}
+
 
 const api = axios.create({
   baseURL: 'https://safecardai.onrender.com',  
@@ -65,30 +88,50 @@ api.interceptors.response.use(
 );
 
 export const predictFraud = async (data: PredictionData): Promise<PredictionResponse> => {
-  try {
-    const response = await api.post('/predict', data);
-    return response.data;
-  } catch (error) {
-    console.error('Prediction error:', error);
-    throw error;
+  const maxRetries = 3;
+  let retries = 0;
+
+  while (retries < maxRetries) {
+    try {
+      const response = await api.post<PredictionResponse>('/predict', data);
+      return response.data;
+    } catch (error) {
+      retries++;
+      if (retries === maxRetries) {
+        throw error;
+      }
+      // Wait for 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
+  throw new Error('Max retries exceeded');
 };
 
-export const uploadFile = async (file: File): Promise<RetrainResponse> => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await api.post('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Upload error:', error);
-    throw error;
+export const uploadFile = async (file: File): Promise<UploadResponse> => {
+  const maxRetries = 3;
+  let retries = 0;
+
+  while (retries < maxRetries) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await api.post<UploadResponse>('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      retries++;
+      if (retries === maxRetries) {
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
+  throw new Error('Max retries exceeded');
 };
 
 export const retrainModel = async (): Promise<RetrainResponse> => {

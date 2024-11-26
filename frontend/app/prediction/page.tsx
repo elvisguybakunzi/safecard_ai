@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { predictFraud } from '../utils/api';
 import type { PredictionResponse } from '../utils/api';
 import Loading from '../components/Loading';
@@ -26,11 +26,20 @@ const initialFormData: FormData = {
   online_order: false,
 };
 
-export default function PredictionPage() {
+const PredictionPage = () => {
+  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -249,10 +258,16 @@ export default function PredictionPage() {
                 </span>
               </p>
             </div>
-            <div>
-              <p className="text-lg">
-                Probability: {(result.probability * 100).toFixed(2)}%
-              </p>
+            <div className="space-y-2">
+              <p className="text-lg font-medium">Probabilities:</p>
+              <div className="ml-4 space-y-1">
+                <p className="text-green-600">
+                  Legitimate: {(result.probabilities.not_fraud * 100).toFixed(2)}%
+                </p>
+                <p className="text-red-600">
+                  Fraudulent: {(result.probabilities.fraud * 100).toFixed(2)}%
+                </p>
+              </div>
             </div>
             {result.message && (
               <div className="text-gray-600">
@@ -264,4 +279,6 @@ export default function PredictionPage() {
       )}
     </div>
   );
-}
+};
+
+export default PredictionPage;

@@ -13,12 +13,27 @@ interface Metrics {
   f1_score: number;
 }
 
+interface DataInfo {
+  total_samples: number;
+  features: string[];
+  fraud_ratio: number;
+  feature_stats: {
+    [key: string]: {
+      mean: number;
+      std: number;
+      min: number;
+      max: number;
+    };
+  };
+}
+
 export default function RetrainingPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [dataInfo, setDataInfo] = useState<DataInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +57,7 @@ export default function RetrainingPage() {
     setError(null);
     setSuccess(null);
     setMetrics(null);
+    setDataInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -53,13 +69,16 @@ export default function RetrainingPage() {
     setError(null);
     setSuccess(null);
     setMetrics(null);
+    setDataInfo(null);
 
     try {
       if (file) {
-        await uploadFile(file);
+        const uploadResponse = await uploadFile(file);
+        setDataInfo(uploadResponse.data_info);
+        setSuccess('Dataset uploaded and analyzed successfully!');
       }
       const response = await retrainModel();
-      setSuccess('Model retrained successfully!');
+      setSuccess((prev) => `${prev}\nModel retrained successfully!`);
       if (response.metrics) {
         setMetrics(response.metrics);
       }
@@ -90,7 +109,7 @@ export default function RetrainingPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-md rounded-lg p-6">
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -159,31 +178,63 @@ export default function RetrainingPage() {
             </button>
           </div>
         </form>
+      </div>
 
-        {metrics && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Model Performance Metrics</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Accuracy</p>
-                <p className="text-lg font-semibold">{(metrics.accuracy * 100).toFixed(2)}%</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Precision</p>
-                <p className="text-lg font-semibold">{(metrics.precision * 100).toFixed(2)}%</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Recall</p>
-                <p className="text-lg font-semibold">{(metrics.recall * 100).toFixed(2)}%</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">F1 Score</p>
-                <p className="text-lg font-semibold">{(metrics.f1_score * 100).toFixed(2)}%</p>
+      {dataInfo && dataInfo.feature_stats && (
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Dataset Information</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <p className="font-medium">Total Samples: {dataInfo.total_samples}</p>
+              <p className="font-medium">Fraud Ratio: {(dataInfo.fraud_ratio * 100).toFixed(2)}%</p>
+            </div>
+            
+            <div className="col-span-2">
+              <h3 className="text-lg font-medium mb-2">Feature Statistics</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feature</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mean</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Std</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {Object.entries(dataInfo.feature_stats).map(([feature, stats]) => (
+                      <tr key={feature}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{feature}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{stats.mean.toFixed(4)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{stats.std.toFixed(4)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{stats.min.toFixed(4)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{stats.max.toFixed(4)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {metrics && (
+        <div className="bg-white shadow-md rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Model Performance Metrics</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="font-medium">Accuracy: {(metrics.accuracy * 100).toFixed(2)}%</p>
+              <p className="font-medium">Precision: {(metrics.precision * 100).toFixed(2)}%</p>
+            </div>
+            <div>
+              <p className="font-medium">Recall: {(metrics.recall * 100).toFixed(2)}%</p>
+              <p className="font-medium">F1 Score: {(metrics.f1_score * 100).toFixed(2)}%</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
