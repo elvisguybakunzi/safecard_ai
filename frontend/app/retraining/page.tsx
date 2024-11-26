@@ -63,8 +63,12 @@ export default function RetrainingPage() {
       if (response.metrics) {
         setMetrics(response.metrics);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to retrain model');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false);
     }
