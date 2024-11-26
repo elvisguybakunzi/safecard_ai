@@ -21,8 +21,13 @@ app.add_middleware(
 )
 
 # Load preprocessor and model
-preprocessor = DataPreprocessor.load_preprocessor('models/preprocessor.pkl')
-model = ModelTrainer.load_model('models/random_forest_model.pkl')
+try:
+    preprocessor = DataPreprocessor.load_preprocessor('models/preprocessor.pkl')
+    model = joblib.load('models/random_forest_model.pkl')
+except Exception as e:
+    print(f"Error loading models: {str(e)}")
+    preprocessor = None
+    model = None
 
 # Define input schema with named features
 class FraudPredictionData(BaseModel):
@@ -38,6 +43,12 @@ class FraudPredictionData(BaseModel):
 @app.post("/predict")
 def predict(data: FraudPredictionData):
     try:
+        if preprocessor is None or model is None:
+            raise HTTPException(
+                status_code=500,
+                detail="Models not loaded. Please ensure model files exist and are valid."
+            )
+            
         # Convert input data into a NumPy array
         input_data = np.array([[
             data.distance_from_home,
@@ -49,7 +60,7 @@ def predict(data: FraudPredictionData):
             data.online_order
         ]])
         
-        # Preprocess the input data
+        # Preprocess the input data using only the scaler
         input_data_scaled = preprocessor.scaler.transform(input_data)
 
         # Make prediction
@@ -60,8 +71,8 @@ def predict(data: FraudPredictionData):
         return {
             "prediction": int(prediction),
             "probabilities": {
-                "not_fraud": probabilities[0],
-                "fraud": probabilities[1]
+                "not_fraud": float(probabilities[0]),
+                "fraud": float(probabilities[1])
             }
         }
     except Exception as e:
@@ -79,32 +90,53 @@ async def upload_data(file: UploadFile = File(...)):
         
         # Preprocess data
         data_info = preprocessor.load_data(file_path)
-        preprocessed_data = preprocessor.preprocess(data_info['dataframe'])
+        df = data_info['dataframe']
+        
+        # Get dataset statistics
+        stats = {
+            "total_samples": len(df),
+            "features": data_info['features'],
+            "fraud_ratio": float(df.iloc[:, -1].mean()),  # Assuming last column is target
+            "feature_stats": {
+                col: {
+                    "mean": float(df[col].mean()),
+                    "std": float(df[col].std()),
+                    "min": float(df[col].min()),
+                    "max": float(df[col].max())
+                } for col in df.columns[:-1]  # Exclude target column
+            }
+        }
         
         return {
-            "message": "File uploaded and preprocessed successfully",
-            "data_info": {
-                "features": data_info['features'],
-                "total_samples": len(data_info['dataframe'])
-            }
+            "message": "File uploaded and analyzed successfully",
+            "data_info": stats
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/retrain")
-async def retrain_model(file: UploadFile = File(None)):
+async def retrain_model():
     try:
-        if file:
-            # Use uploaded file for retraining
-            file_path = f'data/uploads/{file.filename}'
-            with open(file_path, 'wb') as buffer:
-                buffer.write(await file.read())
-            data_info = preprocessor.load_data(file_path)
-        else:
-            # Default to original dataset
-            data_info = preprocessor.load_data()
-
-        # Preprocess
+        # Get the most recently uploaded file from the uploads directory
+        upload_dir = 'data/uploads'
+        if not os.path.exists(upload_dir):
+            raise HTTPException(
+                status_code=400, 
+                detail="No dataset available. Please upload a dataset first."
+            )
+            
+        files = os.listdir(upload_dir)
+        if not files:
+            raise HTTPException(
+                status_code=400, 
+                detail="No dataset available. Please upload a dataset first."
+            )
+            
+        # Get the most recent file
+        latest_file = max([os.path.join(upload_dir, f) for f in files], key=os.path.getctime)
+        
+        # Load and preprocess the data
+        data_info = preprocessor.load_data(latest_file)
         preprocessed_data = preprocessor.preprocess(data_info['dataframe'])
         
         # Train new model
@@ -120,12 +152,22 @@ async def retrain_model(file: UploadFile = File(None)):
             preprocessed_data['y_test']
         )
         
-        # trainer.save_model('models/classifier.pkl')
-        # preprocessor.save_preprocessor('models/preprocessor.pkl')
+        # Save the new model and preprocessor
+        trainer.save_model('models/random_forest_model.pkl')
+        preprocessor.save_preprocessor('models/preprocessor.pkl')
+        
+        # Update the global model reference
+        global model
+        model = trainer.model
         
         return {
             "message": "Model retrained successfully",
-            "metrics": evaluation_metrics
+            "metrics": {
+                "accuracy": float(evaluation_metrics['accuracy']),
+                "precision": float(evaluation_metrics['precision']),
+                "recall": float(evaluation_metrics['recall']),
+                "f1_score": float(evaluation_metrics['f1_score'])
+            }
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
