@@ -52,7 +52,7 @@ export interface UploadResponse {
 
 const api = axios.create({
   baseURL: 'https://safecardai.onrender.com',  
-  timeout: 60000, 
+  timeout: 100000, 
   headers: {
     'Content-Type': 'application/json',
   }

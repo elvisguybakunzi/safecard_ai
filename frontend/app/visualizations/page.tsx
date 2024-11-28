@@ -6,9 +6,9 @@ import Image from 'next/image';
 export default function VisualizationsPage() {
   const visualizations = [
     {
-      title: 'Feature Importance',
+      title: 'Correlation Heatmap',
       description: 'Relative importance of each feature in fraud detection',
-      imagePath: '/images/feature_importance.png',
+      imagePath: '/images/correlation_heatmap.png',
     },
     {
       title: 'Confusion Matrix',
@@ -21,9 +21,9 @@ export default function VisualizationsPage() {
       imagePath: '/images/roc_curve.png',
     },
     {
-      title: 'Distribution Analysis',
-      description: 'Distribution of transaction amounts for fraudulent vs legitimate transactions',
-      imagePath: '/images/distribution.png',
+      title: 'Violin Plot of Distance from Home',
+      description: 'Violin plot that visualizes the distribution of the distance_from_home feature for two categories of a variable labeled fraud (values 0.0 and 1.0).',
+      imagePath: '/images/distance_from_home_violinplot.png',
     },
   ];
 
@@ -59,35 +59,32 @@ export default function VisualizationsPage() {
         
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Feature Importance</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Correlation Heatmap</h3>
             <p className="text-gray-600">
-              This chart shows which transaction characteristics are most influential in detecting fraud.
-              Longer bars indicate features that have a stronger impact on the model's decisions.
+            This heatmap shows feature correlations, highlighting that ratio_to_median_purchase_price (0.45), online_order (0.29), and distance_from_home (0.21) have the strongest positive correlations with fraud. Other features, like used_chip (-0.09) and used_pin_number (-0.15), have weak or negative correlations, suggesting they may be less predictive for fraud detection.
             </p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Confusion Matrix</h3>
             <p className="text-gray-600">
-              The confusion matrix displays the model's prediction accuracy by showing true positives,
-              true negatives, false positives, and false negatives in a grid format.
+            This confusion matrix shows the performance of a fraud detection model. It correctly classified 480 "No Fraud" cases and 115 "Fraud" cases. There were no false positives (incorrectly predicting fraud) and only 5 false negatives (missing fraud cases). The model achieves high accuracy (99.17%), perfect precision (100%), and strong recall (95.83%), making it very effective at identifying fraud with minimal errors.
             </p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">ROC Curve</h3>
             <p className="text-gray-600">
-              The ROC curve illustrates the trade-off between the true positive rate and false positive
-              rate at various classification thresholds. A larger area under the curve indicates better
-              model performance.
+            This ROC curve shows the performance of a Random Forest Classifier with an AUC of 1.00, indicating perfect classification. The model achieves a high true positive rate (sensitivity) while maintaining a low false positive rate, effectively distinguishing between fraud and no-fraud cases with no errors.
             </p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Distribution Analysis</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Violin Plot of Distance from Home</h3>
             <p className="text-gray-600">
-              This visualization compares the distribution of transaction amounts between fraudulent
-              and legitimate transactions, helping identify patterns in fraudulent behavior.
+            A violin plot is a data visualization that combines aspects of a box plot and a kernel density plot to show the distribution of a dataset across different categories.
+
+            This violin plot compares the distributions of distance_from_home for fraudulent (orange) and non-fraudulent (blue) transactions. Both categories are concentrated around shorter distances, but their distributions differ slightly, suggesting that distance_from_home might help in distinguishing between fraud and non-fraud cases.
             </p>
           </div>
         </div>

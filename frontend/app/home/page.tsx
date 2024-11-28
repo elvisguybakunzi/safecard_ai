@@ -17,6 +17,43 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* Platform Overview Section */}
+        <div className="mt-16 bg-white rounded-xl shadow-lg p-8 relative overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Securing Digital Transactions with AI
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Our platform uses advanced AI algorithms to enhance fraud detection, providing businesses and individuals with tools to safeguard their financial transactions. We use machine learning models to analyze patterns and detect anomalies in real-time.
+              </p>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-600">99.17%</div>
+                  <div className="text-sm text-gray-600">Accuracy Rate</div>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-600">&lt;0.5s</div>
+                  <div className="text-sm text-gray-600">Response Time</div>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-600">24/7</div>
+                  <div className="text-sm text-gray-600">Monitoring</div>
+                </div>
+              </div>
+            </div>
+            <div className="relative h-64 md:h-96">
+              <Image
+                src="/images/credit-card.png"
+                alt="Secure Credit Card"
+                fill
+                style={{ objectFit: 'contain' }}
+                className="drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Feature Cards */}
         <div className="mt-16 grid gap-8 md:grid-cols-3">
           <Link href="/prediction" className="transform hover:scale-105 transition-transform duration-200">

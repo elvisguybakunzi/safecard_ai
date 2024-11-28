@@ -38,10 +38,10 @@ export default function Footer() {
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <ul className="space-y-2 text-sm">
                 <li className="text-gray-300">
-                  <span className="font-medium">Email:</span> support@safecardai.com
+                  <span className="font-medium">Email:</span> guyelvisbakunzi@gmail.com
                 </li>
                 <li className="text-gray-300">
-                  <span className="font-medium">Location:</span> African Leadership University
+                  <span className="font-medium">Location:</span> Kigali, Rwanda
                 </li>
               </ul>
             </div>

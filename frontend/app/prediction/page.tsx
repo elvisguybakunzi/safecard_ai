@@ -5,6 +5,7 @@ import { predictFraud } from '../utils/api';
 import type { PredictionResponse } from '../utils/api';
 import Loading from '../components/Loading';
 import Error from '../components/Error';
+import FeatureExplanations from '../components/FeatureExplanations';
 
 interface FormData {
   distance_from_home: string;
@@ -117,9 +118,8 @@ const PredictionPage = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Fraud Detection Prediction</h1>
-      
       {error && <Error message={error} />}
-
+      
       <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-md rounded-lg p-6">
         {/* Numeric Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,6 +277,9 @@ const PredictionPage = () => {
           </div>
         </div>
       )}
+      <div>
+      <FeatureExplanations />
+      </div>
     </div>
   );
 };
