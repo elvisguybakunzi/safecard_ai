@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { retrainModel, uploadFile } from '../utils/api';
 import type { RetrainResponse } from '../utils/api';
 import Loading from '../components/Loading';
@@ -83,10 +84,15 @@ export default function RetrainingPage() {
         setMetrics(response.metrics);
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
+      console.error('Prediction error:', err);
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message || 
+                             err.response?.data?.detail || 
+                             err.message || 
+                             'An unexpected error occurred';
+        setError(errorMessage);
       } else {
-        setError('An unknown error occurred');
+        setError('An unexpected error occurred');
       }
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { predictFraud } from '../utils/api';
 import type { PredictionResponse } from '../utils/api';
 import Loading from '../components/Loading';
@@ -97,9 +98,19 @@ const PredictionPage = () => {
       const response = await predictFraud(predictionData);
       console.log('Received prediction response:', response);
       setResult(response);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Prediction error:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      if (axios.isAxiosError(err)) {
+        // Handle Axios-specific errors
+        const errorMessage = err.response?.data?.message || 
+                             err.response?.data?.detail || 
+                             err.message || 
+                             'An unexpected error occurred';
+        setError(errorMessage);
+      } else {
+        // Handle other types of errors
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }
