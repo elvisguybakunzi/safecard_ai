@@ -26,8 +26,11 @@ safecard_ai/
 │   ├── data/             # Training and test datasets
 │   ├── ml_pipeline_functions/ # ML pipeline components
 │   ├── models/           # Saved model files
+|   ├── result_locust_100_user/ # Locust results for 100 users
+|   ├── locustfile.py     # Locust load testing
 │   ├── main.py          # FastAPI application
-│   └── requirements.txt  # Python dependencies
+│   ├── requirements.txt  # Python dependencies
+|   └── sample_data.csv   # Sample transaction data for load testing
 │
 ├── frontend/             # Next.js frontend application
 │   ├── app/             # Application components and pages
@@ -51,6 +54,21 @@ safecard_ai/
 - Frontend: [https://safecard-ai.vercel.app](https://safecard-ai.vercel.app)
 - Backend API: [https://safecardai.onrender.com](https://safecardai.onrender.com)
 - API Documentation: [https://safecardai.onrender.com/docs](https://safecardai.onrender.com/docs)
+- Video Demonstration: [https://www.youtube.com/watch?v=UJZT0p3j7m8](https://www.youtube.com/watch?v=UJZT0p3j7m8)
+
+### Docker Users
+
+The application is also available as Docker images for easy deployment:
+
+#### Docker Image
+```bash
+# Pull the image
+docker pull elvisguy/safecard-ai:latest
+
+# Run the container
+docker run -p 3000:3000 elvisguy/safecard-ai:latest
+```
+
 
 ## Technology Stack
 
@@ -62,6 +80,7 @@ safecard_ai/
 
 ### Backend
 - FastAPI for API endpoints
+- Locust for load testing
 - Scikit-learn for ML models
 - Pandas for data processing
 - Python 3.8+ (Recommended 3.11+)
@@ -93,6 +112,14 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+run the locust file to run the load test
+
+```bash
+pip install locust
+uvicorn main:app --reload # Run in one terminal
+locust -f locustfile.py # Run in another terminal
 ```
 
 3. Set up the frontend
@@ -138,19 +165,6 @@ The application is deployed using:
 - Frontend: Vercel
 - Backend: Render.com
 - Model: Deployed with the backend
-
-### Docker Deployment
-
-The application is also available as Docker images for easy deployment:
-
-#### Docker Image
-```bash
-# Pull the image
-docker pull elvisguy/safecard-ai:latest
-
-# Run the container
-docker run -p 3000:3000 elvisguy/safecard-ai:latest
-```
 
 ## Acknowledgments
 
