@@ -1,0 +1,3 @@
+Method,Name,Error,Occurrences
+POST,/retrain,HTTPError('400 Client Error: Bad Request for url: /retrain'),4210
+POST,/predict,HTTPError('422 Client Error: Unprocessable Entity for url: /predict'),2089
