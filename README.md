@@ -51,7 +51,7 @@ safecard_ai/
 ## Live Demo
 
 🚀 **Access the live application:**
-- Frontend: [https://safecard-ai.vercel.app](https://safecard-ai.vercel.app)
+- Frontend: [https://safecardai.vercel.app](https://safecardai.vercel.app)
 - Backend API: [https://safecardai.onrender.com](https://safecardai.onrender.com)
 - API Documentation: [https://safecardai.onrender.com/docs](https://safecardai.onrender.com/docs)
 - Video Demonstration: [https://www.youtube.com/watch?v=UJZT0p3j7m8](https://www.youtube.com/watch?v=UJZT0p3j7m8)
